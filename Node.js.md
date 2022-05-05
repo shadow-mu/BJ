@@ -2338,3 +2338,226 @@ SELECT COUNT(*)AS total FROM users WHERE status=0
 select username as uname,password as upwd from users
 ```
 
+
+
+4.在项目中操作数据库
+
+1.在项目中操作数据库的步骤
+
+1. 安装操作MySQL数据库的第三方模块(mysql)
+2. 通过mysql模块连接到MySQL数据库
+3. 通过mysql模块执行SQL语句
+
+![image-20220505172802074](img/image-20220505172802074.png)
+
+2.安装与配置mysql模块
+1.安装mysql模块
+
+mysql模块是托管于npm上的第三方模块。它提供了在Node.js项目中连接和操作MySQL数据库的能力.
+
+```
+npm install mysql
+```
+
+2.配置mysql模块
+在便用ysql模块操作MySQL数据库之前，必须先对mysql使块进行必要的配置，主要的配置步深如下：
+
+```js
+//1.导入mysq1锁块
+const mysql=require('mysql')
+//2,建立与mySQL数据库的连接
+const db = mysql.createPool({
+host:'127.0.0.1',//数据库的IP地址
+user:'root',//登录数据库的账号
+pa55word:'admin123',//登录数据库的玛
+databa5e:'my_db01'//指定要操作那个数起库
+```
+
+3.测试mysql模块能否正常工作
+
+调用db.quey()函数，指定要执行的SQL语句，通过回调函数拿到执行的结果：
+
+```js
+//检测mysql模块能否正常工作
+db.query('SELECT 1'.(err,results)=>{
+if (err)return console.log(err.message)
+//只要能打印出【RowDataPacket {'1':1}】的结果，就证明数据阵连接正常
+console.log(results)
+})
+```
+
+4.查询数据
+查询users表中所有的数据：
+
+```
+//查询users表中所有的用户数据
+db.query('SELECT FROM users',(err,results)=>{
+//查询失败
+if (err)return console.log(err.message)
+//查间成功
+console.log(results)
+})
+```
+
+5.插入数据
+向users表中新增数据，其中username为Spider--Man,password为pcc321.示例代码如下：
+
+```
+//1.要插入到users表中的数据对象
+const user =username:'Spider-Man',password:'pcc321'}
+//2.待执行的SQL语句，其中英文的？表示占位符
+const sqlr=INSERT INTO users (username,password)VALUES (?,?)
+//3.数组的形式，依次为？占位符指定具体的值
+db.query(sqlStr,[user.username,user.password],(err,results)=>
+if (err)return console.log(err.message)//
+if(results.affectedRows==1){console.log('插入数据成功')}//成功
+})
+```
+
+6.插入数据的便捷方式
+向表中新增数据时，如果数据对象的每个属性和数据表的字段一一对应，则可以通过如下方式快速插入数据：
+
+```
+//1.要插入到users表中的数据对像
+const user ={username:'Spider-Man2',password:'pcc4321'}
+//2.待执行的SQL语句，其中英文的？表示占位符
+const sqlStr 'INSERT INTO users SET ?'
+//3.直接将数据对像当作占位符的值
+db.query(sqlStr,user,(err,results)=>{ 
+if (err)return console.log(err.message)//
+if(results.affectedRows==1){console.log('插入数据成功')}//成功
+})
+```
+
+7.更新数据
+
+可以通过如下方式，更新表中的数据：
+
+```js
+//1,要更新的数据对象
+const user =id:7,username:'aaa',password:'000'}
+//2.要执行的SQL语句
+const sqlStr = 'UPDATE users SET username=?,password=?WHERE id=?'
+//3.调用db.query()执行SQL语句的同时，使用数组依次为占位符指定具体的值
+db.query(sqlStr,[user.username,user.password,user.id],(err,results)=>{
+if (err)return console.log(err.message)//
+if(results.affectedRows==1){console.log('更新数据成功！')}//成功
+})
+```
+
+8.更新数据的便捷方式
+更新表数据时，如果数据对象的每个属性和数据表的字段一一对应，则可以通过如下方式快速更新表数据：
+
+```js
+//1.要更新的数据对象
+const user ={id:7,username:'aaaa',password:'0000'}
+//2.要执行的SQL语句
+const sqlst='UPDATE users SET WHERE id=?
+//3.调用db.query()执行SQL语句的同时，使用数组依次为占位符指定具体的值
+db.query(sqlStr,[user,user.id],(err,results)=>{
+if (err)return console.log(err.message)//
+if(results.affectedRows=1){console.log('更新数据成功！')}//成功
+})
+```
+
+9.删除数据
+在删除数据时，推荐根据d这样的唯一标识，来删除对应的数据。示例如下：
+
+```js
+//1.要执行的SQL语句
+const sqlStr 'DELETE FROM users WHERE id=？'
+//2.调用db.query()执行SQL语句的同时，为占位符指定具体的值
+//注意：如果SQL语句中有多个占位符，则必须使用数组为每个占位符指定具体的值如果SQL语句中只有一个占位符，则可以省路数组
+db.query(sqlstr,7,(err,results)=>
+if (err)return console.log(err.message)//
+if(results.affectedRows==1){console.log('删除数据成功！')}//成功
+})
+```
+
+10.标记删除
+便用DELETE语句，会把真正的把数据从表中刚除掉。为了保险起见，推荐使用标记删除除的形式，来模拟删除的动作
+
+所谓的标记删除，就是在表中设置类似于status这样的状态字段，来标记当前这条数据是否被删除，
+
+当用户执行了删除的动作时，我们并没有执行DELETE语句把数据删除掉，而足执行了UPDATE语句，将这条数据对应的status字段标记为删除即可。
+
+```js
+//标记删除：使用UPDATE语句替代DELETE语句：只更新数据的状态，并没有真正删除
+db.query('UPDATE USERS SET status=1 WHERE id=?',6,(err,results)=>{
+if (err)return console.log(err.message)//
+if(results.affectedRows==1){console.log('删除数据城功！')}//成功
+})
+```
+
+### 15.前后端身份认证
+
+1.Web开发模式
+
+目前主流的Web开发模式有两种，分别是：
+
+1. 基于服务端道染的传统Web开发模式
+2. 基于前后端分离的新型Web开发模式
+
+1.服务端渲染的Web开发模式
+服务端渲染的概念：服务器发送给客户端的HTML页面，是在服务器通过字符串的拼接，动态生成的。因此，客户端不需要使用Ajax这样的技术额外请求页面的数据，代码示例如下：
+
+```js
+app.get('/index.html',(req,res)=>
+//1.要渲染的数据
+const user ={name:'zs',age:20}
+//2,服务器端通过字符串的拼接，动态生成HTML内容
+const html='<h1>姓名：$(user.name},年龄：$(user.age}</h1>`
+//3.把生成好的页面内容响应给客户端。因此，客户端拿到的是带有真实数据的HTML页面
+res.send(html)
+})
+```
+
+2.服务端渲染的优缺点
+优点：
+
+①前端耗时少，因为服务器端负责动态生成HTML内容，浏览器只需要直接渲染页面即可。尤其是移动端，史省电，
+②有利于SEO,因为服务器端响应的是完整的HTML页面内容，所以爬虫更容易爬取获得信息，更有利于SEO。
+
+缺点：
+①占用服务器端资源。即服务器端完成HTML页面内容的拼接，如果请求较多，会对服务器造成一定的访问压力。
+②不利于前后端分离。开发效率低。使用服务器端渲染，则无法进行分工合作，尤其对于前端复杂度高的项目，不利于项目高效开发。
+
+3.前后端分离的Web开发模式
+前后端分离的概念：前后端分离的开发模式，依赖于Ajax技术的广泛应用。简而言之，前后端分离的Web开发模式，就是后端只负责提供API接口，前端使用Ajax调用接口的开发模式。
+
+4.前后端分离的优缺点
+优点：
+①开发体验好，前端专注于UI页面的开发，后端专注于api的开发，且前端有多的选择性。
+②用户体验好。Ajax技术的广泛应用，极大的提高了用户的体验，可以轻松实现页面的局部刷新。
+③减轻了服务器端的渲染压力，因为页面最终是在每个用户的浏览器中生成的，
+
+缺点：
+①不利于SEO,因为完整的HTML页面需要在客户端动态拼接完成，所以爬虫对无法爬取页面的有效信息。（解决方案：利用Vue、React等前端框架的SSR(server side render技术能够很好的解决SEO问题！)
+
+5.如何选择Web开发模式
+
+**不谈业务场景而盲目选择使用何种开发模式都是耍流氓。**
+●比如企业级网站，主要功能是展示而没有复杂的交互，并且需要良好的SEO,则这时我们就需要使用服务器端道染：
+●而类似后台管理项目，交互性比较强，不需要考虑SE0，那么就可以使用前后端分离的开发模式。
+
+另外，具体使用何种开发模式并不是绝对的，为了同时兼顾了首页的渲染速度和前后端分离的开发效率，一些网站采用了首屏服务器端渲染+其他页面前后端分离的开发模式。
+
+2.身份认证
+
+1.什么是身份认证
+
+身份认证(Authentication)又称"身份验证”、“鉴权”，是指通过一定的手段，完成对用户身份的确认.
+
+●日常生活中的身份认证随处可见，例如：高铁的验票乘车，手机的密码或指纹解锁，支付宝或微信的支付密码等
+●在Web开发中，也涉及到用户身份的认证，例如：各大网站的手机险证码登录、邮箱密码登录、二维码登录等。
+
+2.为什么需要身份认证
+身份认证的目的。是为了**确认当前所声称为某种身份的用户**，**确实是所声称的用户**。例如，你去找快递员取快递，你要怎么证明这份快递是你的。
+
+在互联网项目开发中，如何对用户的身份进行认证，是一个值得深入探讨的问题。例如，如何才能保证网站不会错误的将“马云的存款数额“”显示到“马化腾的账户“上。
+
+3.不同开发模式下的身份认证
+对于服务端渲染和前后端分离这两种开发使式来说，分别有着不同的身份认证方案：
+
+1. 服务端道染推荐使用Session认证机制
+2. 前后端分离推荐使用JWT认证机制
