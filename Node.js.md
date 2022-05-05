@@ -2065,7 +2065,9 @@ $('#btnJSONP').on('click', function () {
 
 具体的安装教程，可以参考素材->MySQL for Windows->安装教程-Windows系统安装MySql->README.md
 
-3.使用MySQL Workbench管理数据库
+3.数据库的基本使用
+
+使用MySQL Workbench管理数据库
 1.连接数据库
 
 ![image-20220505113559877](img/image-20220505113559877.png)
@@ -2073,4 +2075,266 @@ $('#btnJSONP').on('click', function () {
 2.了解主界面的组成部分
 
 ![image-20220505115431590](img/image-20220505115431590.png)
+
+3.创建数据库
+
+![image-20220505140215686](img/image-20220505140215686.png)
+
+4.创建数据表
+
+![image-20220505140827804](img/image-20220505140827804.png)
+
+DataType数据类型：
+
+1. int整数
+2. varchar(len)字符串
+3. tinyint(1)布尔值
+
+字段的特殊标识：
+
+1. PK(Primary Key)主键、唯一标识
+2. NN(Not Null)值不允许为空
+3. UQ(Unique)值唯一
+4. AI(Auto Increment)值自动增长
+
+5.向表中写入数据
+
+![image-20220505142833511](img/image-20220505142833511.png)
+
+2.使用SQL管理数据库
+
+1.SQL(英文全称：Structured Query Language)是结构化查询语言，专门用来访问和处理数据库的编程语言。能够让我们以编程的形式，操作数据库里面的数据。
+
+三个关键点：
+①SQL是一门数据库编程语言
+②使用SQL语言编写出来的代码，叫做SQL语句
+①SQL语言只能在关系型数据库中使用（例如MySQL、Oracle、SQL Server)·非关系型数据库（例如Mongodb)不支持SQL语言
+
+2.SQL能做什么
+
+1. 从数据库中查询数据
+2. 向数据库中插入新的数据
+3. 更新数据库中的数据
+4. 从数据库删除数据
+5. 可以创建新数据库
+6. 可在数据库中创建新表
+7. 可在数据库中创建存储过程、视图
+8. etc.…
+
+3.SQL的学习目标
+
+重点掌握如何便用SQL从数据表中：
+查间数据(select)、插入数据(insert into)、更新故据(update)、删除数据(delete)
+
+额外需要掌握的4种SQL语法：
+where条件、and和or运算符、order by排序、count(*)函数
+
+3.MySQL的基本使用
+
+1.SQL的SELECT语句
+
+1.语法
+
+SELECT语句用于从表中查询数据。执行的结果被存储在一个结果表中（称为结果集）。语法格式如下：
+
+```sql
+--这是是注释
+--从FROM定的【表中】，查询出【所有的】数据.*表示【所有列】
+SELECT*FROM 表名称
+--从FROM指定的【表中】，查询出定列名称（字段）的数据.
+SELECT列名称 FROM 表名称
+```
+
+**注意：SQL语句中的关键字对大小写不敏感。SELECT等效于select,.FROM等效于from.**
+
+2.SELECT*示例
+
+我们希望从users表中选取所有的列，可以便用符号*取代列的名称，示例如下：
+
+```
+SELECT * FROM users
+```
+
+3.SELECT列名称示例
+如需获取名为'username'和"password的列的内容（从名为'users"的数据库表），请使用下面的SELECT语句：
+
+```
+SELECT username,password FROM users
+```
+
+2.SQL的INSERT INTO语句
+
+1.语法
+NSERT INTO语句用于向数据表中插入新的数据行，语法格式如下：
+
+```
+-- 语法解读：向指定的表中，插入如下几列数据，列的值场过va1ues一指定
+-- 注意：列和值要一对应，多个列和多个值之间，使用英文的恒号分隔
+NSERT INTO table_name(列1，列2，，,)VALUES(值1，值2，，，)
+```
+
+2.INSERT INTO示例
+向users表中，插入一条username为tony stark,password为098123的用户数据，示例如下：
+
+```
+INSERT INTO users (username,password)values ('tony stark','098123')
+```
+
+3.SQL的UPDATE语句
+1.语法
+
+Update语句用于修改表中的数据。语法格式如下：
+
+```
+--语法解读：
+--1,用UPDATE指定要更新那个表中的数据
+--2,用SET指定列对应的新值
+--3,用WHERE定更新的条件
+UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称=某值
+```
+
+2.UPDATE示例-更新某一行中的一个列
+把users表中id为7的用户密码，更新为888888。示例如下：
+
+```
+UPDATE users SET password='888888'WHERE id=7
+```
+
+3.UPDATE示例-更新某一行中的若干列
+
+把users表中id为2的用户码和用户状态，分别更新为admin123和1。示例如下：
+
+```
+UPDATE users SET passworde='adnin123',status=1 WHERE id=2
+```
+
+4.SQL的DELETE语句
+1.语法
+DELETE语句用于删除表中的行，语法格式如下：
+
+```
+--从定的表中，根据WHERE条件，删除对应的数行
+DELETE FROM 表名 WHERE 列名称=值
+```
+
+2.DELETE示例
+从users表中，除id为4的用户，示例如下：
+
+```
+DELETE FROM users WHERE id=4
+```
+
+5.SQL的WHERE子句
+
+1.语法
+WHERE子句用于限定选择的标准。在SELECT、UPDATE、DELETE语句中，苦可使用WHERE子句来限定选择的标准，
+
+```
+--查询语句中的WHERE条件
+SELECT列名称FROW表名称WHERE列 运算符 值
+--更新语句中的WHERE条件
+UPDATE 表名称 SET 列=值 WHERE 列  运算符 值
+--除语句中的WHERE条件
+DELETE FROM 表名称 WHERE列 运算符 值
+```
+
+2.可在WHERE子句中使用的运算符
+
+下面的运算符可在WHERE子句中使用，用来限定迭择的标准：
+
+![image-20220505153113242](img/image-20220505153113242.png)
+
+注意：在某些版本的SQL中，操作符<>可以写为!=
+
+```
+--查询 status为1的所有用户
+SELECT * FROM users WHERE status=1
+--查询id大于2的所有用户
+SELECT * FROM users WHERE id>2
+--查询username不等于admin的所有用户
+SELECT * FROM users WHERE username<>'admin'
+```
+
+6.SQL的AND和OR运算符
+1.语法
+AND和OR可在WHERE子语句中把两个或多个条件结合起来。
+
+AND表示必须同时满足多个条件，相当于JavaScript中的&&运算符，例如if(a!==10&&a!==20)
+
+OR表示只要满足任意一个条件即可，相当于JavaScript中的‖运算符，例如if(a!==10la!==20)
+
+2.AND运算符示例
+使用AND来显示所有status为0，并且id小于3的用户：
+
+```
+SELECT FROM users WHERE status=0 AND id<3
+```
+
+OR运算符示例
+使用OR来显示所有status为1，或者username为zs的用户：
+
+```
+SELECT FROM users WHERE status=1 OR username='zs'
+```
+
+7.SQL的ORDER BY子句
+1.语法
+
+ORDER BY语句用于根据指定的列对结果集进行排序。
+ORDER BY语句默从按照升序对记录进行排序。
+如果您希塑按照降序对记录进行排序，可以使用DESC关键字。
+
+2.ORDER BY子句-升序排序
+对users表中的数据，按照status字段进行升序排序，示例如下：
+
+```
+注意：如下两条SQL语句是等价的，
+因为ORDER BY默认进行升序排序
+其中，ASC关键字代表升序排序
+SELECT FROM users ORDER BY status;
+SELECT FROM users ORDER BY status ASC;
+```
+
+3.ORDER BY子句-降序排序
+
+对users表中的数据，按照id字段进行降序排序，示例如下：
+
+```
+-·注意：DESC代表降序排序
+SELECT FROM users ORDER BY id DESC
+```
+
+4.ORDER BY子句-多重排序
+对users表中的数据，先按照status字段进行降序排序，再按照username的字母顺序，进行升序排序，示例如下：
+
+```
+--注意：DESC代表辉序排序
+SELECT * FROM users ORDER BY status DESC,username ASC
+```
+
+8.SQL的COUNT(*)函数
+
+1.语法
+COUNT(*)函数用于返回查询结果的总数据条数，语法格式如下：
+
+```
+SELECT COUNT(*)FROM 表名称
+```
+
+2.COUNT(*)示例
+查询users表中status为0的总数据条数：
+
+```
+SELECT COUNT(*) FROM users WHERE status=0
+```
+
+3.使用AS为列设置别名
+如果希望给查询出来的列名称设置别名，可以使用AS关键字，示例如下：
+
+```
+--将列名称从C0UNT(*)修改为total
+SELECT COUNT(*)AS total FROM users WHERE status=0
+--其他
+select username as uname,password as upwd from users
+```
 
