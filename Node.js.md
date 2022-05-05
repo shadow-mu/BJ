@@ -2065,3 +2065,12 @@ $('#btnJSONP').on('click', function () {
 
 具体的安装教程，可以参考素材->MySQL for Windows->安装教程-Windows系统安装MySql->README.md
 
+3.使用MySQL Workbench管理数据库
+1.连接数据库
+
+![image-20220505113559877](img/image-20220505113559877.png)
+
+2.了解主界面的组成部分
+
+![image-20220505115431590](img/image-20220505115431590.png)
+
