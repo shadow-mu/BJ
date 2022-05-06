@@ -2561,3 +2561,289 @@ res.send(html)
 
 1. 服务端道染推荐使用Session认证机制
 2. 前后端分离推荐使用JWT认证机制
+
+3.Session认证机制
+
+1.HTTP协议的无状态性
+
+了解HTTP协议的无状态性是进一步学习Session认证机制的必要前提.
+HTTP协议的无状态性，指的是客户端的每次HTTP请求都是独立的，连续多个请求之间没有直接的关系，服务器不会主动保留每次HTTP请求的状态。
+
+![image-20220506102306193](img/image-20220506102306193.png)
+
+2.如何突破HTTP无状态的限制
+对于超市来说，为了方便收银员在进行结算时给VIP用户打折，超市可以为每个VIP用户发放会员卡。
+
+![image-20220506102426906](img/image-20220506102426906.png)
+
+注意：现实生活中的会员卡身份认证方式，在Web开发中的专业术语叫做Cookie。
+
+3.什么是Cookie
+Cookie是存储在用户刻览器中的一段不超过4KB的字符串.它由一个名称(Name)、一个值(Value)和其它几个用于控制Cookie有**效期、安全性、使用范围**的可选属性组成。
+
+不同域名下的Cookie各自独立，每当客户瑞发起请求时，会自动把当前域名下所有未过期的Cookie一同发送到服务器。
+
+Cookie的几大特性：
+
+1. 自动发送
+2. 域名独立
+3. 过期时限
+4. 4KB限制
+
+4.Cookie在身份认证中的作用
+
+客户端第一次请求服务器的时候，服务器通过响应头的形式。向客户端发送一个身份认证的Cookie,客户端会自动将Cookie保存在测览器中，
+
+随后，当客户端浏览器每次请求服务器的时候，浏览器会自动将身份认证相关的Cookie,通过请求头的形式发送给服务器，服务器即可验明客户端的身份。
+
+![image-20220506103510173](img/image-20220506103510173.png)
+
+5.Cookie不具有安全性
+
+由于Cookie是存储在浏览器中的，而且浏览器也提供了读写Cookie的API，因此Cookie.很容易被伪造，不具有安全性。因此不建议服务器将重要的隐私数据，通过Cookie的形式发送给浏览器，
+
+![image-20220506103854334](img/image-20220506103854334.png)
+
+注意：干万不要使用Cookie存储重要且隐私的数据！比如用户的身份信息、密码等。
+
+6.提高身份认证的安全性
+
+为了防止客户伪造会员卡，收银员在拿到客户出示的会员卡之后，可以在收银机上进行刷卡认证。只有收银机确认存在的会员卡，才能被正常使用。
+
+![image-20220506104122635](img/image-20220506104122635.png)
+
+这种**会员卡**+**刷卡认证**的设计理念，就是**Session认证机制**的精髓。
+
+7.Session的工作原理
+
+![image-20220506104611134](img/image-20220506104611134.png)
+
+4.在Express中使用Session认证
+
+1.安装express-session中间件
+在Express项目中，只需要安装express-session中间件，即可在项目中便用Session认证：
+
+```
+npm install express-session
+```
+
+2.配置express-session中间件
+
+express-session中间件安装成功后，需要通过app.use()来注册session中间件，示例代码如下：
+
+```js
+//1.导入session中间件
+var session require('express-session')
+//2.配置Session中间件
+app.use(session({
+secret:'keyboard cat',//secret属性的值可以为任意字符串
+resave:false,//1固定写法
+saveUninitialized:true//固定写法
+}))
+```
+
+3.向session中存数据
+
+当express-session中间件配置成功后，即可通过req.session来访问和使用session对象，从而存储用户的关键信息：
+
+```js
+app.post('/api/login',(req,res)=>
+//判断用户提交的登录信息是否正确
+if (req.body.username !='admin'I req.body.password !='000000'){
+return res.send({status:1,msg:'登录失败'})
+req.session.user=req.body//将用户的信息，存储到Session中
+req.session.islogin=true//将用户的登录状态，存储到Session中
+res.send({status:0,msg:'登录成功'})
+})
+```
+
+4.从session中取数据
+可以直接从req.session对象上获取之前存储的数据，示例代码如下：
+
+```js
+//获取用户姓名的接口
+app.get('/api/username',(req,res)=>{
+//判断用户是否登录
+if (!req.session.islogin){
+return res.send({status:1,msg:'fail'}
+res.send({status:0,msg:'success',username:req.session.user.username }
+)
+```
+
+5.清空session
+
+调用req.session.destroy()函数，即可清空服务器保存的session信息，
+
+```js
+//退出登录的接口
+app.post('/api/logout',(req,res)=>{
+//清空当前客户端对应的session信息
+req.session.destroy()
+res.send({
+status:0,
+msg:'退出登录成功'
+})
+})
+```
+
+5.JWT认证机制
+
+1.了解Session认证的局限性
+
+Session认证机制需要配合Cookie才能实现.由于Cookie默认不支持跨域访问，所以，当涉及到前端跨域请求后端接口的时候，需要做很多额外的配置，才能实现跨域Session认证。
+
+注意：
+●当前端请求后端接口不存在跨域问题的时候，推荐使用Session身份认证机制。
+●当前端需要跨域请求后端接口的时候，不推荐便用Session身份认证机制，准荐使用JWT认证机制。
+
+2.什么是JWT
+JWT(英文全称：JSON Web Token)是目前最流行的跨域从证解决方案。
+
+3.JWT的工作原理
+
+![image-20220506114110840](img/image-20220506114110840.png)
+
+总结：用户的信息通过Token字符串的形式，保存在客户端浏览器中。服务器通过还原Token字符串的形式来认证用户的身份。
+
+4.JWT的组成部分
+
+JWT通常由三部分组成，分别是Header(头部)、Payload(有效荷载)、Signature(签名)。
+
+三者之间使用英文的“.”分隔，格式如下：
+
+```
+Header.Payload.Signature
+```
+
+下面是JWT字符串的示例：
+
+![image-20220506114423759](img/image-20220506114423759.png)
+
+5.JWT的三个部分各自代表的含义
+
+JWT的三个组成部分，从前到后分别是Header、Payload、Signature..
+
+其中：
+●Payload部分才是真正的用户信息，它是用户信息经过加密之后生成的字符甲。
+●Header和Signature足安全性相关的部分，只是为了保证Token的安全性。
+
+![image-20220506114632772](img/image-20220506114632772.png)
+
+6.JWT的使用方式
+客户端收到服务器返回的JWT之后，通常会将它储存在localStorage或sessionStorage中。
+
+此后，客户端每次与服务器通信，都要带上这个WT的字符串，从而进行身份认证。推荐的做法是把JWT放在HTTP请求头的Authorization字段中，格式如下：
+
+```
+Authorization:Bearer <token>
+```
+
+6.在Express中使用JWT
+
+1.安装JWT相关的包
+
+```
+npm install jsonwebtoken express-jwt
+```
+
+其中：
+
+1. jsonwebtoken用于生成JWT字符串
+2. express-jwt用于将JWT字符串解折还原成JSON对象
+
+2.导入JWT相关的包
+使用require()函数，分别导入JWT相关的两个包：
+
+```JS
+//1.导入用于生成JWT 字符串的包
+const jwt = require('jsonwebtoken')
+//2.导入用于将客户端发送过的JWT字符串，解析还原成JS0N对像的包
+const expressJWT = require('express-jwt')
+```
+
+3.定义secret密钥
+
+为了保证WT字符串的安全性，防止JWT字符串在网络传输过程中被别人破解，我们需要专门定义一个用于加密和解密的secret密钥：
+
+①当生成JWT字符串的时候，需要使用secret密钥对用户的信息进行加密，最终得到加密好的JWT字符串
+②当把JWT字符串解析还原成SON对像的时候，需要使用secret密钥进行解密
+
+```
+//3.secret密胡的本质：就是一个字符电
+const secretKey ='itheima No1 '
+```
+
+4.在登录成功后生成JWT字符串
+
+调用jsonwebtoken包提供的sign()方法，将用户的信息加密成JWT字符串，响应给客户端：
+
+```js
+//登录接口
+app.post('/api/login',function(req,res){
+//·,省略登录失败情况下的代码
+//用户登录成功之后，生成JWT字符串，通过token属性响应给客户端
+res.send({
+status:200,
+message:'登录成功！'
+//调用jwt,sign()生成JWT字符串，三个参数分别是：用户信息对像、加密密钥、配置对像
+token:jwt.sign({username:userinfo.username },secretKey,{expiresIn:'30s'})
+})
+```
+
+ 参数1：用户的信息对象
+ 参数2：加密的秘钥
+ 参数3：配置对象，可以配置当前 token 的有效期
+
+5.将JWT字符串还原为JSON对象
+
+客户端海次在访问那些有权限接口的时候，都需要主动通过请求头中的Authorization字段，将Token字符串发送到服务器进行身份认证，
+
+此时，服务器可以通过express-.jwt这个中间件，自动将客户端发送过来的Token解析还原成JSON对像：
+
+express-jwt要安装5.3.3版本，不然会报错
+
+```js
+//使用app.use()来注册中间件
+//expressJWT({secret:secretKey})就是用来解析Token的中间件
+//.unless({path:[/\/api\/]})用来指定哪些接口不需要访问权限
+app.use(expressJWT({secret:secretKey }).unless({path:[/^\/api\//]}))
+//报错使用这个
+app.use(expressJWT({secret:secretKey,algorithms:['HS256']}).unless({path:[/^\/api\//]})) 
+```
+
+6.使用req.user获取用户信息
+
+当express-jwt这个中间件配置成功之后，即可在那些有权限的接口中，使用req.user对像，来问从WT字符串中解析出来的用户信息了，代码如下：
+
+```
+app.use(expressJWT({secret:secretKey,algorithms:['HS256']}).unless({path:[/^\/api\//]})) 
+```
+
+```js
+//这是一个有权限的API接口
+app.get('/admin/getinfo',function(req,res){
+console.log(req.user)
+res.send({
+status:200,
+message:'获取用户信息成功！·】
+data:req.user
+})
+})
+```
+
+注意：只要配置成功了 express-jwt 这个中间件，就可以把解析出来的用户信息，挂载到 req.user 属性上
+
+7.捕获解析JWT失败后产生的错误
+当使用express-jwt解析Token字符串时，如果客户端发送过来的Token字符串过期或不合法，会产生一个解析失败的错误，影响项目的正常运行。我们可以通过Express的错误中间件，捕获这个错误并进行相关的处理，示例代码如下：
+
+```js
+app.use((err,req,res,next)=>{
+	//token解析失败导致的错误
+	if(err.name==='UnauthorizedError'){
+		return res.send({status:401,message:'无效的token'})
+	}
+	//其它原因导致的错误
+	res.send({status:500,message:'未知错误'})
+})
+```
+
